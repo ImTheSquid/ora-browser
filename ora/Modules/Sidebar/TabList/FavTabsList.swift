@@ -32,27 +32,12 @@ struct FavTabsGrid: View {
         )
         LazyVGrid(columns: adaptiveColumns, spacing: isShowingHidden ? 0 : 10) {
             if tabs.isEmpty {
-                Group {
-                    if sidebarManager.stickyFavs || isHoveringOverEmpty {
-                        EmptyFavTabItem()
-                    } else {
-                        Capsule().frame(height: 3).opacity(0)
-                    }
-                }
-                .onDrop(
-                    of: [.text],
-                    delegate: SectionDropDelegate(
-                        items: tabs,
-                        draggedItem: $draggedItem,
-                        targetSection: .fav,
-                        tabManager: tabManager,
-                        isHovering: $isHoveringOverEmpty
-                    )
-                )
+                EmptyFavTabItem()
             } else {
-                ForEach(tabs) { tab in
+                ForEach(tabsSortedByParent(tabs)) { iTab in
+                    let tab = iTab.tabs.first!
                     FavTabItem(
-                        tab: tab,
+                        tabs: iTab.tabs,
                         isSelected: tabManager.isActive(tab),
                         isDragging: draggedItem == tab.id,
                         onTap: { onSelect(tab) },
@@ -64,23 +49,25 @@ struct FavTabsGrid: View {
                     .onDrag { onDrag(tab.id) }
                     .onDrop(
                         of: [.text],
-                        delegate: TabDropDelegate(
-                            item: tab,
-                            draggedItem: $draggedItem,
+                        delegate: GeneralDropDelegate(
+                            item: .tab(tab),
+                            representative: .tab(tabset: true),
+                            draggedItem: $draggedItem, targetedItem:
+                            .constant(nil),
                             targetSection: .fav
                         )
                     )
                 }
             }
         }
-        .animation(.easeOut(duration: 0.1), value: adaptiveColumns.count)
         .onDrop(
             of: [.text],
-            delegate: SectionDropDelegate(
-                items: tabs,
-                draggedItem: $draggedItem,
-                targetSection: .fav,
-                tabManager: tabManager
+            delegate: GeneralDropDelegate(
+                item:
+                .container(
+                    tabManager.activeContainer!),
+                representative: .divider, draggedItem: $draggedItem,
+                targetedItem: .constant(nil), targetSection: .fav
             )
         )
         .onChange(of: tabs.count) { _, newTabs in
@@ -88,5 +75,6 @@ struct FavTabsGrid: View {
                 sidebarManager.stickyFavs = false
             }
         }
+        .animation(.easeOut(duration: 0.1), value: adaptiveColumns.count)
     }
 }

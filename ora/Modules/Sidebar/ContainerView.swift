@@ -62,7 +62,7 @@ struct ContainerView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
                     if !privacyMode.isPrivate {
-                        PinnedTabsList(
+                        TabsList(
                             tabs: pinnedTabs,
                             draggedItem: $draggedItem,
                             onDrag: dragTab,
@@ -72,7 +72,8 @@ struct ContainerView: View {
                             onClose: removeTab,
                             onDuplicate: duplicateTab,
                             onMoveToContainer: moveTab,
-                            containers: containers
+                            onAddNewTab: addNewTab,
+                            isPinned: true
                         )
 
                         HStack {
@@ -96,7 +97,7 @@ struct ContainerView: View {
                         }
                         .foregroundStyle(.secondary)
                     }
-                    NormalTabsList(
+                    TabsList(
                         tabs: normalTabs,
                         draggedItem: $draggedItem,
                         onDrag: dragTab,
@@ -106,7 +107,8 @@ struct ContainerView: View {
                         onClose: removeTab,
                         onDuplicate: duplicateTab,
                         onMoveToContainer: moveTab,
-                        onAddNewTab: addNewTab
+                        onAddNewTab: addNewTab,
+                        isPinned: false
                     )
                 }
             }
@@ -173,7 +175,9 @@ struct ContainerView: View {
         draggedItem = tabId
         let provider = TabItemProvider(object: tabId.uuidString as NSString)
         provider.didEnd = {
-            draggedItem = nil
+            Task { @MainActor in
+                draggedItem = nil
+            }
         }
         return provider
     }
