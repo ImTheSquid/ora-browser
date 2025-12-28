@@ -105,11 +105,11 @@ struct TopDropDelegate: DropDelegate {
                                 dampingFraction: 0.8
                             )
                         ) {
-                            container.bringToTop(tab: from)
+//                            container.bringToTop(tab: from)
                         }
                     } else {
                         container.reorderTabs(from: from, to: section)
-                        container.bringToTop(tab: from)
+//                        container.bringToTop(tab: from)
                     }
                 }
             }
